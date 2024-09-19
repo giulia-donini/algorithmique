@@ -11,7 +11,9 @@ typedef struct  {
     void (*fprint_data)(void*, FILE*); // Comment afficher un éléments
 } * table_t;
 
-table_t table_new(int n, void* (*delete_data)(void*)) { int i;
+
+table_t table_new(int n, void* (*delete_data)(void*), int (*equal_data)(void*,void*), void (*fprint_data)(void*, FILE*)) { 
+  int i;
   table_t ptab;
 
     // Allocation de la structure
@@ -22,6 +24,8 @@ table_t table_new(int n, void* (*delete_data)(void*)) { int i;
   ptab->max_size=n;
   ptab->actual_size=0;
   ptab->delete_data=delete_data;
+  ptab->equal_data=equal_data;
+  ptab->fprint_data=fprint_data;
 
     // Allocation des données
   if ( (ptab->data=calloc(n,sizeof(*(ptab->data)))) ==NULL) {
@@ -30,6 +34,13 @@ table_t table_new(int n, void* (*delete_data)(void*)) { int i;
   }
     // Fin creation et retour
   return ptab;
+}
+
+table_t table_append(void* e, table_t tab) {
+  if (tab==NULL) return NULL;
+  tab->data[tab->actual_size]=e;
+  tab->actual_size++;
+  return tab;
 }
 
 table_t table_delete(table_t tab) { int i;
@@ -46,37 +57,60 @@ table_t table_delete(table_t tab) { int i;
   return NULL;
 }
 
-// Fonction de liberation des réels
-void* double_delete(void *data) {
-  double* p = (double*)data;
-  free(p);
-  return NULL; 
+void table_fprint(table_t table, FILE *fp) {
+    if (table==NULL) return;
+    double* px;
+    for(int i=0;i<table->actual_size; i++){
+      px=(double*)table->data[i];
+      fprintf(fp,"%.2lf ",*px);
+    }
 }
 
-int main() { int i;
+void table_print(table_t table) {
+    table_fprint(table,stdout);
+    printf("\n");
+}
+
+table_t table_insertat(int i, void *e, table_t table) {
+    if (table==NULL) return NULL;
+    if (i < 0 && i >= table->actual_size) return NULL;
+    table->data[i]=e;
+    return table;
+}
+
+table_t table_removeat(table_t table, int i) {
+    if (table==NULL) return NULL;
+    if (i < 0 && i >= table->actual_size) return NULL;
+    for(int j=i; j<table->actual_size-1;j++){ 
+      table->data[j]=table->data[j+1];
+    }
+    table->actual_size--;
+    return table;
+}
+
+
+
+int main() { 
+  
+  int size = 10;
   double* px;
   // tab sera un tableau de 10 réels double
   table_t tab;
 
   // Creation du tableau
-  tab=table_new(10,double_delete);
+  tab=table_new(size,NULL,NULL,NULL);
 
   // Ajout de 5 elements aléatoires
-  for( i=0; i<5; i++)  {
+  for( int i=0; i<size; i++)  {
     // Creation d'un reel
     px= malloc(sizeof(*px));
     *px = random() % 100;
-    // Ajout du reel à la fin et mise a jour de la taille
-    tab->data[tab->actual_size++]=px;
+      // Ajout du reel à la fin et mise a jour de la taille
+  printf("Ajoutant %.2lf au tableau\n", *px);
+  tab = table_append(px, tab);
   }
 
-  // affichage des éléments ajoutés
-  for ( i=0; i<tab->actual_size; i++)  {
-    // On recupere le pointeur sur un reel : conversion explicite obligatoire pour utiliser l'element
-    px= (double*) tab->data[i];
-    // Affichage du reel
-    printf("%.2lf ",*px);
-  }
+  table_print(tab);
   puts("");
 
   // Libération du tableau ET des éléments

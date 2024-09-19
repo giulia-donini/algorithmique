@@ -78,6 +78,9 @@
 #define maketableappend(type) \
   tabletype(type) tablefunction(type,_append)(type e, tabletype(type) table)  {\
     /* A Completer */\
+    if (table==NULL) return NULL;\
+    table->actual_size++;\
+    table->data[table->actual_size-1]=e;\
     return table;\
   }
 
@@ -87,6 +90,9 @@
 #define maketableinsertat(type) \
   tabletype(type) tablefunction(type,_insert_at)(type e, int i, tabletype(type) table)  {\
     /* A Completer */\
+    if (table==NULL) return NULL;\
+    if (i < 0 && i >= table->actual_size) return NULL;\
+    table->data[i]=e;\
     return table;\
   }
 
@@ -94,6 +100,12 @@
 #define maketableremoveat(type) \
   tabletype(type) tablefunction(type,_remove_at)(int i, tabletype(type) table) {\
     /* A Completer */\
+    if (table==NULL) return NULL;\
+    if (i < 0 && i >= table->actual_size) return NULL;\
+    for(int j=i; j<table->actual_size-1;j++){ \
+      table->data[j]=table->data[j+1];\
+    }\
+    table->actual_size--;\
     return table;\
   }
 
@@ -101,11 +113,18 @@
 #define maketablefprint(type) \
   void tablefunction(type,_fprintf)(tabletype(type) table,FILE* fp) {\
     /* A Completer */\
+    if (table==NULL) return;\
+      for(int i=0;i<table->actual_size; i++)\
+        fprintf(fp,"%.2lf ",table->data[i]);\
   }
 
 #define maketableprint(type) \
   void tablefunction(type,_printf)( tabletype(type) table) {\
     /* A Completer */\
+    if (table==NULL) return;\
+      for(int i=0;i<table->actual_size; i++)\
+        printf(fp,"%.2lf ",table->data[i]);\
+      printf("\n");\
   }
 
 ////////////////////////////////
