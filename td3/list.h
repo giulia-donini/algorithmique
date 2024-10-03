@@ -54,7 +54,6 @@ link_t link_add_last(char* c, link_t l);
 list_t list_del_last(list_t l );
 link_t link_del_last(link_t l);
 
-/*
 // Recherche un element selon le critere compare. Retourne le maillon trouve ou NULL
 link_t list_lookup(char* elem, list_t l, int(*compare)(char* c1, char* c2));
 // Recherche le premier maillon contenant e,
@@ -67,4 +66,4 @@ list_t list_remove(char* param, list_t l);
 
 // Les visiteurs
 void list_simple_visit(list_t l, void (*)(void*,void*), void* param);
-void list_visit(list_t l, int (*exec_on_value)(void*,void*), int (*exec_on_link)(list_t,void*),void* param); */
+void list_visit(list_t l, int (*exec_on_value)(void*,void*), int (*exec_on_link)(list_t,void*),void* param);
